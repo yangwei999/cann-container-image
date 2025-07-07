@@ -1,46 +1,44 @@
 # Stage 1: Install Python
-FROM quay.io/pypa/manylinux_2_28:latest AS python-installer
+FROM ubuntu:22.04 AS python-installer
 
 # Python Environment variables
-ENV PATH=/usr/local/python3.9.23/bin:${PATH}
+ENV PATH=/usr/local/python3.11.13/bin:${PATH}
 
-RUN yum update -y && \
-    yum install -y \
-        gcc \
-        gcc-c++ \
-        make \
-        cmake \
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        apt-transport-https \
+        ca-certificates \
+        bash \
         curl \
-        zlib-devel \
-        bzip2-devel \
-        openssl-devel \
-        ncurses-devel \
-        sqlite-devel \
-        readline-devel \
-        tk-devel \
-        gdbm-devel \
-        libpcap-devel \
-        xz-devel \
-        libev-devel \
-        expat-devel \
-        libffi-devel \
-        systemtap-sdt-devel \
-    && yum clean all \
-    && rm -rf /var/cache/yum \
+        build-essential \
+        libssl-dev \
+        zlib1g-dev \
+        libncurses5-dev \
+        libbz2-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libffi-dev \
+        libnss3-dev \
+        libgdbm-dev \
+        liblzma-dev \
+        libev-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/tmp/* \
     && rm -rf /tmp/*
 
 # Install Python
-RUN curl -fsSL https://repo.huaweicloud.com/python/3.9.23/Python-3.9.23.tgz -o /tmp/Python-3.9.23.tgz && \
-    tar -xf /tmp/Python-3.9.23.tgz -C /tmp && \
-    cd /tmp/Python-3.9.23 && \
-    mkdir -p /usr/local/python3.9.23/lib && \
-    ./configure --enable-shared --enable-shared LDFLAGS="-Wl,-rpath /usr/local/python3.9.23/lib" --prefix=/usr/local/python3.9.23 && \
+RUN curl -fsSL https://repo.huaweicloud.com/python/3.11.13/Python-3.11.13.tgz -o /tmp/Python-3.11.13.tgz && \
+    tar -xf /tmp/Python-3.11.13.tgz -C /tmp && \
+    cd /tmp/Python-3.11.13 && \
+    mkdir -p /usr/local/python3.11.13/lib && \
+    ./configure --enable-shared --enable-shared LDFLAGS="-Wl,-rpath /usr/local/python3.11.13/lib" --prefix=/usr/local/python3.11.13 && \
     make -j $(nproc) && \
     make altinstall && \
-    ln -sf /usr/local/python3.9.23/bin/python3.9 /usr/local/python3.9.23/bin/python3 && \
-    ln -sf /usr/local/python3.9.23/bin/pip3.9 /usr/local/python3.9.23/bin/pip3 && \
-    ln -sf /usr/local/python3.9.23/bin/python3 /usr/local/python3.9.23/bin/python && \
-    ln -sf /usr/local/python3.9.23/bin/pip3 /usr/local/python3.9.23/bin/pip && \
+    ln -sf /usr/local/python3.11.13/bin/python3.11 /usr/local/python3.11.13/bin/python3 && \
+    ln -sf /usr/local/python3.11.13/bin/pip3.11 /usr/local/python3.11.13/bin/pip3 && \
+    ln -sf /usr/local/python3.11.13/bin/python3 /usr/local/python3.11.13/bin/python && \
+    ln -sf /usr/local/python3.11.13/bin/pip3 /usr/local/python3.11.13/bin/pip && \
     rm -rf /tmp/*
 
 # Stage 2: Install CANN
@@ -48,18 +46,24 @@ FROM python-installer AS cann-installer
 
 ARG TARGETPLATFORM
 
-RUN yum update -y && \
-    yum install -y \
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        git \
+        wget \
+        gcc \
+        g++ \
+        make \
+        cmake \
+        zlib1g \
+        openssl \
         unzip \
         pciutils \
         net-tools \
-        lapack-devel \
-        gcc-gfortran \
-        util-linux \
-        findutils \
-        wget \
-    && yum clean all \
-    && rm -rf /var/cache/yum
+        libblas-dev \
+        gfortran \
+        patchelf \
+        libblas3 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Note: Install CANN runtime dependencies
 RUN pip install --no-cache-dir --upgrade pip
@@ -73,9 +77,9 @@ RUN ARCH=$(case "${TARGETPLATFORM}" in \
         "linux/arm64") echo "aarch64" ;; \
         *) echo "Unsupported TARGETPLATFORM: ${TARGETPLATFORM}" && exit 1 ;; \
     esac) && \
-    CANN_TOOLKIT_URL=https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.1.RC1/Ascend-cann-toolkit_8.1.RC1_linux-${ARCH}.run && \
-    CANN_KERNELS_URL=https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.1.RC1/Ascend-cann-kernels-910b_8.1.RC1_linux-${ARCH}.run && \
-    CANN_NNAL_URL=https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%208.1.RC1/Ascend-cann-nnal_8.1.RC1_linux-${ARCH}.run && \
+    CANN_TOOLKIT_URL=https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/Milan-ASL/Milan-ASL%20V100R001C22B800TP052/Ascend-cann-toolkit_8.2.RC1.alpha003_linux-${ARCH}.run && \
+    CANN_KERNELS_URL=https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/Milan-ASL/Milan-ASL%20V100R001C22B800TP052/Ascend-cann-kernels-910b_8.2.RC1.alpha003_linux-${ARCH}.run && \
+    CANN_NNAL_URL=https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/Milan-ASL/Milan-ASL%20V100R001C22B800TP052/Ascend-cann-nnal_8.2.RC1.alpha003_linux-${ARCH}.run && \
     wget --quiet --header="Referer: https://www.hiascend.com/" ${CANN_TOOLKIT_URL} -O ~/Ascend-cann-toolkit.run && \
     wget --quiet --header="Referer: https://www.hiascend.com/" ${CANN_KERNELS_URL} -O ~/Ascend-cann-kernels.run && \
     wget --quiet --header="Referer: https://www.hiascend.com/" ${CANN_NNAL_URL} -O ~/Ascend-cann-nnal.run
@@ -97,10 +101,10 @@ RUN . /usr/local/Ascend/ascend-toolkit/set_env.sh && \
     rm -f ~/Ascend-cann-nnal.run
     
 # Stage 3: Copy results from previous stages
-FROM quay.io/pypa/manylinux_2_28:latest AS official-manylinux
+FROM ubuntu:22.04 AS official-ubuntu
 
 # Python Environment variables
-ENV PATH=/usr/local/python3.9.23/bin:${PATH}
+ENV PATH=/usr/local/python3.11.13/bin:${PATH}
 
 # Note: Toolkit Environment variables, obtained from /usr/local/Ascend/ascend-toolkit/set_env.sh
 ENV ASCEND_TOOLKIT_HOME=/usr/local/Ascend/ascend-toolkit/latest
@@ -143,22 +147,24 @@ ENV LCCL_PARALLEL=0
 
 SHELL [ "/bin/bash", "-c" ]
 
-RUN yum update -y && \
-    yum install -y \
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        apt-transport-https \
         ca-certificates \
         bash \
-        glibc \
-        sqlite-devel \
+        libc6 \
+        libsqlite3-dev \
         gcc \
-        gcc-c++ \
+        g++ \
         make \
         cmake \
         git \
-    && yum clean all \
-    && rm -rf /var/cache/yum \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/tmp/* \
     && rm -rf /tmp/*
 
-COPY --from=cann-installer /usr/local/python3.9.23 /usr/local/python3.9.23
+COPY --from=cann-installer /usr/local/python3.11.13 /usr/local/python3.11.13
 COPY --from=cann-installer /usr/local/Ascend /usr/local/Ascend
 COPY --from=cann-installer /etc/Ascend /etc/Ascend
 
@@ -170,7 +176,7 @@ RUN \
     echo "source ${CANN_TOOLKIT_ENV_FILE}" >> ~/.bashrc && \
     echo "source ${CANN_NNAL_ENV_FILE}" >> /etc/profile && \
     echo "source ${CANN_NNAL_ENV_FILE}" >> ~/.bashrc
-
+    
 ENTRYPOINT ["/bin/bash", "-c", "\
     source /usr/local/Ascend/ascend-toolkit/set_env.sh && \
     source /usr/local/Ascend/nnal/atb/set_env.sh && \
