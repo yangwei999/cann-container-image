@@ -9,7 +9,7 @@ scanner:
     default_interval: "24h"
     output:
       repo: https://github.com/Ascend/cann-container-image
-      path: security/reports
+      path: Security/reports
 
 # period scan repo setting
 repos:
