@@ -29,6 +29,7 @@ images:
         disable: true
       - tag: "quay.io/ascend/cann:latest"
         interval: "2d"  
+        disable: true
         arches:
           - linux/arm64
 
@@ -42,7 +43,7 @@ images:
   - image: "cann"
     tags:
       - tag: "docker.io/ascendai/cann:8.1.rc1-910b-ubuntu22.04-py3.11"
-        disable: true
+      
 
 # notice setting (option)
 notifications:
