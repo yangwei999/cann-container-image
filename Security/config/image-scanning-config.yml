@@ -27,6 +27,8 @@ images:
         interval: "2d"
       - tag: "quay.io/ascend/cann:latest"
         interval: "2d"  
+        arches:
+          - linux/arm64
 
   - image: "cann"
     tags:
