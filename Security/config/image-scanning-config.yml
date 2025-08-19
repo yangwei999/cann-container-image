@@ -12,13 +12,6 @@ scanner:
       path: Security/reports
 
 # period scan repo setting
-repos:
-  - namespace: "ascend"
-    registry: "quay.io"
-    images:  
-      - cann
-    arches:
-      - linux/arm64
 
 # specific image scan
 images:
