@@ -25,6 +25,8 @@ images:
 
       - tag: "quay.io/ascend/cann:8.2.rc1-910-openeuler22.03-py3.11"
         interval: "2d"
+      - tag: "quay.io/ascend/cann:latest"
+        interval: "2d"  
 
   - image: "cann"
     tags:
