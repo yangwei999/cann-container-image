@@ -20,7 +20,6 @@ images:
       - tag: "docker.io/ascendai/cann:latest"
         # override global scan cycle
         interval: "2h"
-        disable: true
         arches:
           - linux/arm64
 
